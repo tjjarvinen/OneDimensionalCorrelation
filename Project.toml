@@ -1,0 +1,13 @@
+name = "OneDimensionalCorrelation"
+uuid = "069f0406-5626-45cf-bd82-e07304321718"
+authors = ["Teemu Järvinen <teemu.jarvinen@helsinki.fi> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.5"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
