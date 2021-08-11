@@ -1,6 +1,8 @@
 module OneDimensionalCorrelation
 
-using FastGaussQuadrature
+using BlockArrays
+using BlockBandedMatrices
+using LinearAlgebra
 using PolynomialBases
 
 include("basis.jl")

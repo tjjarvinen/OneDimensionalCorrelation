@@ -25,12 +25,16 @@ struct ElementGrid{T} <: AbstractElementGrid{T}
 end
 
 
-struct Basis <: AbstractBasis{Float64}
-    egvector::Vector{ElementGrid}
+struct Basis{T} <: AbstractBasis{T}
+    egvector::Vector{ElementGrid{T}}
     x::Vector{Float64}
-    function Basis(eg::ElementGrid...)
-        #TODO add checks
-        new(collect(eg), vcat(eg...))
+    function Basis(eg::ElementGrid{T}...) where T
+        if length(eg) > 1
+            for i in 2:length(eg)
+                @assert eg[i-1] <= eg[i]
+            end
+        end
+        new{T}(collect(eg), vcat(eg...))
     end
 end
 
@@ -48,7 +52,7 @@ function Base.show(io::IO, ::MIME"text/plain", eg::ElementGrid)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", b::Basis)
-    print(io, "Basis - $(length(b)) elements")
+    print(io, "Basis - $(length(b.egvector)) elements and $(length(b)) points")
 end
 
 
@@ -98,4 +102,16 @@ end
 
 function derivative_matrix(eg::ElementGrid)
     return eg.gl.D ./ eg.scaling
+end
+
+
+function derivative_matrix(b::Basis)
+    dv = [ derivative_matrix(x) for x in b.egvector  ]
+    # get block sizes for block banded matrix
+    cr = [size(x)[1] for x in dv] # dv is square matrix
+    out = BlockBandedMatrix{eltype(b)}(undef, cr, cr, (0,0))
+    for i in 1:length(cr)
+        out[Block(i,i)] = dv[i]
+    end
+    return out 
 end
