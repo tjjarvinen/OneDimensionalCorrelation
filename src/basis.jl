@@ -115,3 +115,8 @@ function derivative_matrix(b::Basis)
     end
     return out 
 end
+
+function get_weight(b::Basis)
+    tmp = get_weight.(b.egvector)
+    return vcat(tmp...)
+end

@@ -28,3 +28,18 @@ using Test
     @test all( derivative_matrix(eg) * sin.(eg) ≈ cos.(eg) )
 
 end
+
+@testset "Basis" begin
+    b = Basis(-π, π, 2, 64)
+
+    u = sin.(b)
+    w = get_weight(b)
+    d = derivative_matrix(b)
+
+    # Integral
+    @test isapprox(w' *  u, 0.0; atol=1E-12)
+
+    # Derivative
+    @test all( d*u ≈ cos.(b) )
+
+end
