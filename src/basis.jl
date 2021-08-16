@@ -17,8 +17,8 @@ end
 struct ElementGrid{T} <: AbstractElementGrid{T}
     el::Element1D
     gl::GaussLegendre{T}
-    shift::T
     scaling::T
+    shift::T
     function ElementGrid(a, b, n)
         new{Float64}(Element1D(a,b), GaussLegendre(n), (b-a)/2, (a+b)/2)
     end
@@ -100,12 +100,12 @@ function get_weight(eg::ElementGrid)
     return eg.gl.weights .* eg.scaling
 end
 
-function derivative_matrix(eg::ElementGrid)
+function PolynomialBases.derivative_matrix(eg::ElementGrid)
     return eg.gl.D ./ eg.scaling
 end
 
 
-function derivative_matrix(b::Basis)
+function PolynomialBases.derivative_matrix(b::Basis)
     dv = [ derivative_matrix(x) for x in b.egvector  ]
     # get block sizes for block banded matrix
     cr = [size(x)[1] for x in dv] # dv is square matrix
@@ -119,4 +119,9 @@ end
 function get_weight(b::Basis)
     tmp = get_weight.(b.egvector)
     return vcat(tmp...)
+end
+
+
+function get_identity(b::Basis)
+    return diagm(ones(length(b)))
 end

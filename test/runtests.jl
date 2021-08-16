@@ -32,6 +32,9 @@ end
 @testset "Basis" begin
     b = Basis(-π, π, 2, 64)
 
+    # Symmetric range 
+    @test b[begin] == -b[end]
+
     u = sin.(b)
     w = get_weight(b)
     d = derivative_matrix(b)
@@ -42,4 +45,14 @@ end
     # Derivative
     @test all( d*u ≈ cos.(b) )
 
+end
+
+@testset "Integrals" begin
+    b = Basis(-5, 5, 2, 64)
+
+    ψ = exp.(-b.^2)
+    I = get_identity(b)
+
+    # Norm of Gaussian
+    @test bracket(b, ψ, I, ψ) ≈ sqrt(π/2)
 end
