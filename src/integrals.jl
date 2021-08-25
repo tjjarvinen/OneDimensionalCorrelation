@@ -57,11 +57,13 @@ end
 
 function fock_matrix(b::Basis, orbitals::AbstractMatrix; alpha=1.0, scale=1.0)
     ∇ = derivative_matrix(b)
-    Eₖ = -0.5 * ∇^2
-    Vₙₑ = -2 .* scale .* exp.( -alpha .* b.^2 ) |> diagm
+    g = metric_tensor(b)
+    Eₖ = 0.5 * ∇' * g * ∇
+    Vₙₑ = -2 .* scale .*  g * diagm( exp.( -alpha .* b.^2 ) )
     J = coulomb_matrix(b, orbitals)
     K = exchange_matrix(b, orbitals)
-    return Eₖ + Vₙₑ + J - K
+    h₁ = Eₖ +  Vₙₑ
+    return h₁ + J - K
 end
 
 
@@ -75,6 +77,7 @@ function coulomb_matrix(b::Basis, orbitals::AbstractMatrix)
     for i in 1:l
         for j in 1:l
             C[i,j] = sum( n -> erig(b, i, j, n, n) * ρ[n,n] * w[n], 1:l)
+            C[i,j] *= w[i]
         end
     end
     return C
@@ -94,7 +97,7 @@ function exchange_matrix(b::Basis, orbitals::AbstractMatrix)
                 K[i,j] += erig(b, i,n,j,m) * ρ[n,m]
             end
             # Add integral weigth for variable (2)
-            K[i,j] *= w[j]
+            K[i,j] *= w[i] * w[j]
         end
     end
     return K     

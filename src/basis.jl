@@ -104,6 +104,9 @@ function PolynomialBases.derivative_matrix(eg::ElementGrid)
     return eg.gl.D ./ eg.scaling
 end
 
+function metric_tensor(b::Basis)
+    return Diagonal(get_weight(b))
+end
 
 function PolynomialBases.derivative_matrix(b::Basis)
     dv = [ derivative_matrix(x) for x in b.egvector  ]

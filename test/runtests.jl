@@ -73,3 +73,16 @@ end
     abs( bracket(b, ϕ1, e_kin, ϕ1) - E(b, 1) ) < 1E-9
     abs( bracket(b, ϕ4, e_kin, ϕ4) - E(b, 4) ) < 1E-9
 end
+
+@testset "Hartree Fock" begin
+    b = Basis(-5, 5, 2, 64)
+    orbitals = initial_orbitals(b)
+    C = coulomb_matrix(b, orbitals)
+    K = exchange_matrix(b, orbitals)    
+    F = fock_matrix(b)
+
+    # Matrices are Hermitian
+    @test C[2,1] ≈ C[2,1]
+    @test K[2,1] ≈ K[2,1]
+    @test F[2,1] ≈ F[2,1]  
+end
