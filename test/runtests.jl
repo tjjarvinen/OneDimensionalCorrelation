@@ -22,7 +22,7 @@ using Test
     eg = ElementGrid(0, 2π, p)
 
     # Integration accuracy
-    @test isapprox(sum(sin.(eg) .* get_weight(eg)), 0.0; atol=1E-12)
+    @test isapprox( sum(sin.(eg) .* get_weight(eg)), 0.0; atol=1E-12 )
 
     # Derivative accuracy
     @test all( derivative_matrix(eg) * sin.(eg) ≈ cos.(eg) )
@@ -35,15 +35,14 @@ end
     # Symmetric range 
     @test b[begin] == -b[end]
 
-    u = sin.(b)
     w = get_weight(b)
-    d = derivative_matrix(b)
+    ∇ = derivative_matrix(b)
 
     # Integral
-    @test isapprox(w' *  u, 0.0; atol=1E-12)
+    @test isapprox( w' *  sin.(b), 0.0; atol=1E-12 )
 
     # Derivative
-    @test all( d*u ≈ cos.(b) )
+    @test all( ∇ * sin.(b) ≈ cos.(b) )
 
 end
 
@@ -55,4 +54,22 @@ end
 
     # Norm of Gaussian
     @test bracket(b, ψ, I, ψ) ≈ sqrt(π/2)
+    @test bracket(b, ψ, ψ) ≈ sqrt(π/2)
+
+    # Particle in box states
+    ϕ1 = particle_in_box(b, 1)
+    ϕ4 = particle_in_box(b, 4)
+    @test bracket(b, ϕ1, ϕ1) ≈ 1
+    @test bracket(b, ϕ4, ϕ4) ≈ 1
+    @test bracket(b, ϕ1, ϕ4) + 1 ≈ 1
+
+    # Particle in box Energy
+    E(b::Basis, n::Int) = 0.5 * n^2 * π^2 / (get_length(b))^2
+
+    d = derivative_matrix(b)
+    e_kin = -0.5 * d^2
+
+    # Kinetic energy accuracy
+    abs( bracket(b, ϕ1, e_kin, ϕ1) - E(b, 1) ) < 1E-9
+    abs( bracket(b, ϕ4, e_kin, ϕ4) - E(b, 4) ) < 1E-9
 end

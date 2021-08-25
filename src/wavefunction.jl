@@ -1,14 +1,16 @@
 
-function bracket(
-        b::Basis,
-        psi1::AbstractVector,
-        op::AbstractMatrix,
-        psi2::AbstractVector
-    )
-    w = get_weight(b)
-    return (conj.(psi1).*w)' * op * psi2
+function particle_in_box(b::Basis, n::Int)
+    L = get_length(b)
+    N = sqrt(2/L)
+    a = n * π / L
+    return N .* sin.(a .* (b .+ 0.5*L) )
 end
 
-function bracket(b::Basis, psi1::AbstractVector, psi2::AbstractVector)
-    return bracket(b, psi1, get_identity(b), psi2)
+function initial_orbitals(b::Basis)
+    l = length(b)
+    ψ = zeros(l,l)
+    for j in 1:l
+        ψ[:,j] = particle_in_box(b, j)
+    end
+    return ψ
 end

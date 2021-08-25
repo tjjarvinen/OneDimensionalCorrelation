@@ -113,15 +113,46 @@ function PolynomialBases.derivative_matrix(b::Basis)
     for i in 1:length(cr)
         out[Block(i,i)] = dv[i]
     end
-    return out 
+    return Matrix(out) 
 end
 
+
+"""
+    get_weight(b::Basis)
+
+Integration weights for the basis
+"""
 function get_weight(b::Basis)
     tmp = get_weight.(b.egvector)
     return vcat(tmp...)
 end
 
 
+"""
+    get_identity(b::Basis)
+
+Identity matrix for the given basis
+"""
 function get_identity(b::Basis)
     return diagm(ones(length(b)))
+end
+
+
+"""
+    get_length(el::Element1D)
+    get_length(eg::ElementGrid)
+    get_length(b::Basis)
+
+Gives physical length the input represents
+"""
+function get_length(el::Element1D)
+    return el.b - el.a
+end
+
+function get_length(eg::ElementGrid)
+    return get_length(eg.el)
+end
+
+function get_length(b::Basis)
+    return sum( get_length, b.egvector) 
 end

@@ -17,10 +17,18 @@ export  Element1D,
         Basis
 
 export  bracket,
+        coulomb_matrix,
         derivative_matrix,
         eri,
+        erig,
+        exchange_matrix,
+        fock_matrix,
         get_identity,
-        get_weight
+        get_length,
+        get_weight,
+        g_tensor,
+        initial_orbitals,
+        particle_in_box
 
 # Write your package code here.
 
