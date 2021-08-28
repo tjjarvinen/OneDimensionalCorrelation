@@ -1,32 +1,4 @@
 
-function g_tensor(b::Basis; alpha=1.0, scale=-1.0)
-    # g_ijnm = J_ijnm - K_injm
-    tmp = erig(b,1,1; alpha=alpha, scale=scale)
-    l = length(b)
-    g =zeros(typeof(tmp), l, l, l, l)
-    Threads.@threads for i in 1:l
-        for j in 1:l, n in 1:l, m in 1:l
-            g[i,j,n,m] = erig(b, i, j, n, m) - erig(b, i, n, j, m)
-        end
-    end
-    return g
-end
-
-function eri(b::Basis, i::Int, j::Int, n::Int, m::Int; tmax=1000)
-    # Basis functions are orthogonal
-    i != j && return 0
-    n != m && return 0
-    return eri(b, i, n; tmax=tmax)
-end
-
-function eri(b::Basis, i::Int, j::Int; tmax=1000, threshold=0.01)
-    f(t, x) = 2/√π *exp(-t^2*x^2)
-    r = abs(b[i]-b[j])
-    r > threshold && return 1/r
-    return quadgk( t->f(t,r), 0, tmax; rtol=1e-12 )[1]
-end
-
-
 """
     erig(b::Basis, i::Int, j::Int; alpha=1.0, scale=1.0)
     erig(b::Basis, i::Int, j::Int, n::Int, m::Int; alpha=1.0, scale=1.0)

@@ -64,7 +64,7 @@ end
 end
 
 @testset "Integrals" begin
-    b = Basis(-5, 5, 2, 64)
+    b = BasisLobatto(-5, 5, 2, 64)
 
     ψ = exp.(-b.^2)
     I = get_identity(b)
