@@ -1,5 +1,6 @@
 module OneDimensionalCorrelation
 
+using ArgCheck
 using BlockArrays
 using BlockBandedMatrices
 using QuadGK
@@ -12,9 +13,11 @@ include("integrals.jl")
 
 
 
-export  Element1D,
+export  Basis,
+        BasisLobatto,
+        Element1D,
         ElementGrid,
-        Basis
+        ElementGridLobatto
 
 export  bracket,
         coulomb_matrix,

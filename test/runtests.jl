@@ -29,7 +29,7 @@ using Test
 
 end
 
-@testset "Basis" begin
+@testset "Basis Gauss-Lagrange" begin
     b = Basis(-π, π, 2, 64)
 
     # Symmetric range 
@@ -42,7 +42,24 @@ end
     @test isapprox( w' *  sin.(b), 0.0; atol=1E-12 )
 
     # Derivative
-    @test all( ∇ * sin.(b) ≈ cos.(b) )
+    @test ∇ * sin.(b) ≈ cos.(b) 
+
+end
+
+@testset "Basis Gauss-Lobatto" begin
+    b = BasisLobatto(-2, 2, 3, 32)
+
+    # Symmetric range 
+    @test b[begin] == -b[end]
+
+    w = get_weight(b)
+    ∇ = derivative_matrix(b)
+
+    # Integral
+    @test isapprox( w' *  sin.(b), 0.0; atol=1E-12 )
+
+    # Derivative
+    @test  ∇ * sin.(b) ≈ cos.(b) 
 
 end
 
