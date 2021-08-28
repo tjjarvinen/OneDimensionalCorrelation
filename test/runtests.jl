@@ -92,7 +92,7 @@ end
 end
 
 @testset "Hartree Fock" begin
-    b = Basis(-5, 5, 2, 64)
+    b = BasisLobatto(-5, 5, 2, 64)
     orbitals = initial_orbitals(b)
     C = coulomb_matrix(b, orbitals)
     K = exchange_matrix(b, orbitals)    
