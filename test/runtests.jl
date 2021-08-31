@@ -81,7 +81,7 @@ end
     @test bracket(b, ϕ1, ϕ4) + 1 ≈ 1
 
     # Particle in box Energy
-    E(b::Basis, n::Int) = 0.5 * n^2 * π^2 / (get_length(b))^2
+    E(b, n) = 0.5 * n^2 * π^2 / (get_length(b))^2
 
     d = derivative_matrix(b)
     e_kin = -0.5 * d^2
