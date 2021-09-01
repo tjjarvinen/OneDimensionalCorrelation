@@ -8,7 +8,7 @@ using LinearAlgebra
 using PolynomialBases
 
 include("basis.jl")
-include("wavefunction.jl")
+include("hartree_fock.jl")
 include("integrals.jl")
 
 
