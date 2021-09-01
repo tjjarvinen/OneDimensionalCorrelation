@@ -26,6 +26,7 @@ export  bracket,
         erig,
         exchange_matrix,
         fock_matrix,
+        fock_matrix!,
         get_identity,
         get_length,
         get_weight,
@@ -34,7 +35,8 @@ export  bracket,
         kinetic_energy,
         metric_tensor,
         one_electron_operator,
-        particle_in_box
+        particle_in_box,
+        solve_hartree_fock
 
 # Write your package code here.
 

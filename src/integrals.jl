@@ -29,16 +29,30 @@ end
 
 
 function fock_matrix(b::AbstractBasis, orbitals::AbstractMatrix; Ve=x->exp(-x^2), Vn=x->-2exp(-0.5x^2))
+    @argcheck size(orbitals) == (length(b), length(b))
     h₁ = one_electron_operator(b, Vn)
     J = coulomb_matrix(b, orbitals)
     #K = exchange_matrix(b, orbitals) # For more than 2 electrons
     return h₁ + J  # h₁ + 2*J - K
 end
 
+function fock_matrix!(f::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMatrix; Ve=x->exp(-x^2), Vn=x->-2exp(-0.5x^2))
+    @argcheck size(f) == size(orbitals) == (length(b), length(b))
+    h₁ = one_electron_operator(b, Vn)
+    J = coulomb_matrix(b, orbitals)
+    #K = exchange_matrix(b, orbitals) # For more than 2 electrons
+    return f = h₁ + J  # h₁ + 2*J - K
+end
+
 
 function coulomb_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
+    C = zeros(size(orbitals))
+    return coulomb_matrix!(C, b, orbitals)
+end
+
+function coulomb_matrix!(C::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMatrix)
+    @argcheck size(C) == size(orbitals) == (length(b), length(b))
     l = length(b)
-    C = zeros(l, l)
     w = get_weight(b)
 
     # Two electrons in total
@@ -54,6 +68,7 @@ end
 
 
 function exchange_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
+    @argcheck size(orbitals) == (length(b), length(b))
     l = length(b)
     K = zeros(l,l)
     w = get_weight(b)
