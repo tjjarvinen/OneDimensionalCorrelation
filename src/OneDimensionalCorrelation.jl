@@ -31,7 +31,9 @@ export  bracket,
         get_weight,
         g_tensor,
         initial_orbitals,
+        kinetic_energy,
         metric_tensor,
+        one_electron_operator,
         particle_in_box
 
 # Write your package code here.
