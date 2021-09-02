@@ -15,12 +15,26 @@ function initial_orbitals(b::AbstractBasis)
     return ψ
 end
 
+
+"""
+    solve_hartree_fock(b::AbstractBasis, Vn; Ve=x->exp(-x^2), rtol=1E-9, max_iter=100)
+
+Solve Hartree Fock equations for two electrons for given nuclear potential `Vn`.
+
+Electron-electron repulsion is fixed to exp(-Δx^2).
+
+# Returns
+- `E`         :  Energy of electronic system
+- `Eorb`      :  Orbital energy
+- `orbitals`  :  Orbitals in collumns
+"""
 function solve_hartree_fock(b::AbstractBasis, Vn ; Ve=x->exp(-x^2), rtol=1E-9, max_iter=100)
+    # Solve FC = SCε for two electrons
     orbitals = initial_orbitals(b)
     F = fock_matrix(b, orbitals; Vn=Vn)
     h₁ = one_electron_operator(b, Vn)
 
-    # We orthogonal, but not orthonormal basis
+    # We have orthogonal, but not orthonormal basis
     X = Diagonal( 1.0 ./ sqrt.( get_weight(b) ) )
 
     # Energy is h₁ + F (=2h₁+J) for two electrons
@@ -29,9 +43,8 @@ function solve_hartree_fock(b::AbstractBasis, Vn ; Ve=x->exp(-x^2), rtol=1E-9, m
     @info "Energy at start = $(E₀)"
     eo, orbitals = eigen( X * F * X )
     orbitals = X * orbitals
+    F = fock_matrix(b, orbitals; Vn=Vn)
     for i in 1:max_iter
-        F = fock_matrix(b, orbitals; Vn=Vn)
-        #fock_matrix!(F, b, orbitals; Vn=Vn)
         E₁ = orbitals[:,1]' * ( h₁ + F ) * orbitals[:,1]
         @info "Energy at iteration $i = $(E₁)"
         if abs(E₁-E₀) < rtol
@@ -40,7 +53,10 @@ function solve_hartree_fock(b::AbstractBasis, Vn ; Ve=x->exp(-x^2), rtol=1E-9, m
             E₀ = E₁ 
             eo, orbitals = eigen( X * F * X )
             orbitals = X * orbitals
+            F = fock_matrix(b, orbitals; Vn=Vn)
         end
     end
-    return eo, orbitals
+    E = orbitals[:,1]' * ( h₁ + F ) * orbitals[:,1]
+    @info "Final energy = $(E)"
+    return E, eo, orbitals
 end

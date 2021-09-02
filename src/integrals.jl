@@ -41,7 +41,7 @@ function fock_matrix!(f::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMat
     h₁ = one_electron_operator(b, Vn)
     J = coulomb_matrix(b, orbitals)
     #K = exchange_matrix(b, orbitals) # For more than 2 electrons
-    return f = h₁ + J  # h₁ + 2*J - K
+    return f .= h₁ + J  # h₁ + 2*J - K
 end
 
 

@@ -101,5 +101,9 @@ end
     # Matrices are Hermitian
     @test C[2,1] ≈ C[2,1]
     @test K[2,1] ≈ K[2,1]
-    @test F[2,1] ≈ F[2,1]  
+    @test F[2,1] ≈ F[2,1]
+
+    V(x) = -2exp(-0.5x^2) 
+    E, eo, orbitals = solve_hartree_fock(b, V)
+    @test E < -2.2123101
 end
