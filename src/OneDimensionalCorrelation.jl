@@ -8,7 +8,7 @@ using LinearAlgebra
 using PolynomialBases
 
 include("basis.jl")
-include("wavefunction.jl")
+include("hartree_fock.jl")
 include("integrals.jl")
 
 
@@ -26,13 +26,17 @@ export  bracket,
         erig,
         exchange_matrix,
         fock_matrix,
+        fock_matrix!,
         get_identity,
         get_length,
         get_weight,
         g_tensor,
         initial_orbitals,
+        kinetic_energy,
         metric_tensor,
-        particle_in_box
+        one_electron_operator,
+        particle_in_box,
+        solve_hartree_fock
 
 # Write your package code here.
 
