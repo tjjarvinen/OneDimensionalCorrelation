@@ -6,10 +6,13 @@ using BlockBandedMatrices
 using QuadGK
 using LinearAlgebra
 using PolynomialBases
+using ProgressMeter
+using Tullio
 
 include("basis.jl")
 include("hartree_fock.jl")
 include("integrals.jl")
+include("ci.jl")
 
 
 
