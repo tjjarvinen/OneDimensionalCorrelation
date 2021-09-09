@@ -5,7 +5,7 @@ function ci_matrix(b::AbstractBasis, orbitals::AbstractMatrix, Vn; Ve=x->exp(-x^
     w = get_weight(b)
     ci = zeros(length(indx), length(indx))
 
-    h1 = metric_tensor(b) * one_electron_operator(b, Vn)
+    h1 = one_electron_operator(b, Vn)
 
     # Electron repulsion tensor to help calculation
     ve = zeros( eltype(orbitals), (length(b), length(b)) )
