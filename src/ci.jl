@@ -1,7 +1,8 @@
 
 function ci_matrix(b::AbstractBasis, orbitals::AbstractMatrix, Vn; Ve=x->exp(-x^2))
+    @argcheck length(b) == size(orbitals, 1)
     # index conversion from HF space to CI space
-    indx = [ (i,j) for i in 1:length(b) for j in i:length(b) ]
+    indx = [ (i,j) for i in axes(orbitals, 2) for j in axes(orbitals, 2) ]
     w = get_weight(b)
     ci = zeros(length(indx), length(indx))
 
@@ -41,11 +42,13 @@ function full_ci(b::AbstractBasis, orbitals::AbstractMatrix, Vn; Ve=x->exp(-x^2)
     nt = Threads.nthreads()
     BLAS.set_num_threads(1)
 
-    ci, indx = ci_matrix(b, orbitals, Vn; Ve=Ve)
+    @info "Creating CI matrix"
+    @time ci, indx = ci_matrix(b, orbitals, Vn; Ve=Ve)
 
     BLAS.set_num_threads(nt)
 
-    ev, ve = eigen(ci)
+    @info "Diagonalizing CI matrix"
+    @time ev, ve = eigen(ci)
 
     BLAS.set_num_threads(bt)
 
