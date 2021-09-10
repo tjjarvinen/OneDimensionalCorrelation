@@ -32,6 +32,7 @@ export  bracket,
         fock_matrix,
         fock_matrix!,
         full_ci,
+        get_element,
         get_identity,
         get_length,
         get_weight,
@@ -41,6 +42,7 @@ export  bracket,
         metric_tensor,
         one_electron_operator,
         particle_in_box,
+        reduced_ci_orbitals,
         solve_hartree_fock
 
 # Write your package code here.

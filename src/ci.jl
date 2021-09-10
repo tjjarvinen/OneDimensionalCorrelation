@@ -59,3 +59,46 @@ function full_ci(b::AbstractBasis, orbitals::AbstractMatrix, Vn; Ve=x->exp(-x^2)
         "indexes"=>indx
     )
 end
+
+
+function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
+    @argcheck length(b) == size(orbitals, 1)
+    function _gram_schmit(orbitals::AbstractMatrix, w::AbstractVector)
+        out = similar(orbitals)
+        norm = sqrt( sum( w .* orbitals[:,1].^2 ) )
+        out[:,1] = orbitals[:,1] # 1st on is expected to be normalized
+        for i in 2:size(out,2)
+            tmp = orbitals[:,i]
+            for j in 1:i-1
+               tmp -= sum( out[:,j] .* w .* orbitals[:,i] ) .* out[:,j]   
+            end
+            norm = sqrt( sum( w .* tmp.^2 ) )
+            out[:,i] = tmp ./ norm 
+        end
+        return out
+    end
+    function _index_gen(l, i)
+        if i == 0
+            return 1
+        else
+            return l + _index_gen(l, i-1) - 1
+        end
+    end
+    function _row_range(l, i)
+        return 2+(i-1)*(l-2):i*(l-2)+1 
+    end
+    nelements = length(b.egvector)
+    new_orbitals = zeros(length(b), length(b)-nelements)
+    le = length(get_element(b, 1))  # all elements have same ammount of points
+    w = get_weight(b)
+    for ne in 1:nelements
+        nr = _index_gen(le, ne-1):_index_gen(le, ne)
+        tmp = diagm(ones(le))[:,begin:end-1]
+        tmp[:,1] = orbitals[nr]
+        t = _gram_schmit(tmp, w[nr])
+        new_orbitals[nr, _row_range(le, ne)] = t[:,begin+1:end]
+    end
+    new_orbitals[:,1] = orbitals[:,1]
+    return new_orbitals
+end
+
