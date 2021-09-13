@@ -64,6 +64,9 @@ end
 function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
     @argcheck length(b) == size(orbitals, 1)
     function _gram_schmit(orbitals::AbstractMatrix, w::AbstractVector)
+        # This is a special version of Gram-Schmid
+        # Where 1st orbital is ignored from normalization
+        # This is becaus it is expected to 
         out = similar(orbitals)
         norm = sqrt( sum( w .* orbitals[:,1].^2 ) )
         out[:,1] = orbitals[:,1] # 1st on is expected to be normalized

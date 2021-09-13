@@ -1,18 +1,35 @@
 
-function particle_in_box(b::AbstractBasis, n::Int)
+function particle_in_box(b, n::Int)
     L = get_length(b)
     N = sqrt(2/L)
     a = n * π / L
-    return N .* sin.(a .* (b .+ 0.5*L) )
+    #return N .* sin.(a .* (b .+ 0.5*L) )
+    return N .* sin.(a .* (b .- b[begin]) )
 end
 
 function initial_orbitals(b::AbstractBasis)
     l = length(b)
-    ψ = zeros(l,l)
-    for j in 1:l
+    ψ = zeros(l,l) # end points are zero so -2
+    for j in axes(ψ,2)
         ψ[:,j] = particle_in_box(b, j)
     end
-    return ψ
+    w = get_weight(b)
+    return gram_schmit(ψ, w)
+end
+
+function gram_schmit(orbitals::AbstractMatrix, w::AbstractVector)
+    out = similar(orbitals)
+    norm = sqrt( sum( w .* orbitals[:,1].^2 ) )
+    out[:,1] = orbitals[:,1] ./ norm
+    for i in 2:size(out,2)
+        tmp = orbitals[:,i]
+        for j in 1:i-1
+           tmp -= sum( out[:,j] .* w .* orbitals[:,i] ) .* out[:,j]   
+        end
+        norm = sqrt( sum( w .* tmp.^2 ) )
+        out[:,i] = tmp ./ norm 
+    end
+    return out
 end
 
 
