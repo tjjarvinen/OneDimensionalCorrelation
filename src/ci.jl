@@ -61,25 +61,9 @@ function full_ci(b::AbstractBasis, orbitals::AbstractMatrix, Vn; Ve=x->exp(-x^2)
 end
 
 
-function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
+function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix; pointlike=false)
     @argcheck length(b) == size(orbitals, 1)
-    function _gram_schmit(orbitals::AbstractMatrix, w::AbstractVector)
-        # This is a special version of Gram-Schmid
-        # Where 1st orbital is ignored from normalization
-        # This is becaus it is expected to 
-        out = similar(orbitals)
-        norm = sqrt( sum( w .* orbitals[:,1].^2 ) )
-        out[:,1] = orbitals[:,1] # 1st on is expected to be normalized
-        for i in 2:size(out,2)
-            tmp = orbitals[:,i]
-            for j in 1:i-1
-               tmp -= sum( out[:,j] .* w .* orbitals[:,i] ) .* out[:,j]   
-            end
-            norm = sqrt( sum( w .* tmp.^2 ) )
-            out[:,i] = tmp ./ norm 
-        end
-        return out
-    end
+    # Index range, for elements-2
     function _index_gen(l, i)
         if i == 0
             return 1
@@ -87,6 +71,7 @@ function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
             return l + _index_gen(l, i-1) - 1
         end
     end
+    # rows for each element contributions
     function _row_range(l, i)
         return 2+(i-1)*(l-2):i*(l-2)+1 
     end
@@ -94,14 +79,27 @@ function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
     new_orbitals = zeros(length(b), length(b)-nelements)
     le = length(get_element(b, 1))  # all elements have same ammount of points
     w = get_weight(b)
-    for ne in 1:nelements
-        nr = _index_gen(le, ne-1):_index_gen(le, ne)
-        tmp = diagm(ones(le))[:,begin:end-1]
-        tmp[:,1] = orbitals[nr]
-        t = _gram_schmit(tmp, w[nr])
-        new_orbitals[nr, _row_range(le, ne)] = t[:,begin+1:end]
+    if pointlike
+        for ne in 1:nelements
+            nr = _index_gen(le, ne-1):_index_gen(le, ne)
+            tmp = diagm(ones(le))[:,begin:end-1]
+            tmp[:,1] = orbitals[nr]
+            t = gram_schmit(tmp, w[nr])
+            new_orbitals[nr, _row_range(le, ne)] = t[:,begin+1:end]
+        end
+    else
+        for ne in 1:nelements
+            nr = _index_gen(le, ne-1):_index_gen(le, ne)
+            tmp = zeros(length(b.egvector[ne]), length(b.egvector[ne])-1)
+            tmp[:,1] = orbitals[nr]
+            for i in 2:size(tmp,2)
+                tmp[:, i] = particle_in_box(b.egvector[ne], i-1)
+            end
+            t = gram_schmit(tmp, w[nr])
+            new_orbitals[nr, _row_range(le, ne)] = t[:,begin+1:end]
+        end
     end
     new_orbitals[:,1] = orbitals[:,1]
-    return new_orbitals
+    return gram_schmit(new_orbitals, w)
 end
 
