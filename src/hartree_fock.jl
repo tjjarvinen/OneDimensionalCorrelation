@@ -9,10 +9,14 @@ end
 
 function initial_orbitals(b::AbstractBasis)
     l = length(b)
-    ψ = zeros(l,l) # end points are zero so -2
-    for j in axes(ψ,2)
+    ψ = zeros(l,l) 
+    for j in 1:l-2 # end points are zero so -2
         ψ[:,j] = particle_in_box(b, j)
     end
+    ψ[end,:] .= 0  # Improve accuracy at the end
+    # Add nonzero end functions
+    ψ[1,end-1] = 1
+    ψ[end,end] = 2
     w = get_weight(b)
     return gram_schmit(ψ, w)
 end
