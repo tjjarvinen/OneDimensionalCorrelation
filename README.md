@@ -26,6 +26,9 @@ V(x) = -2( exp(-0.5(x-2)^2) + exp(-0.5(x+2)^2) )
 
 # Solve Hartree Forck for 2 electrons
 E, Eorb, orbitals = solve_hartree_fock(b, V)
+
+# Solve Full CI
+ci = full_ci(b, orbitals, V)
 ```
 
 To visualize results

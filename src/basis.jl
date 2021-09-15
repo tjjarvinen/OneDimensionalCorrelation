@@ -228,3 +228,7 @@ end
 function get_length(b::AbstractBasis)
     return sum( get_length, b.egvector) 
 end
+
+function get_element(b::AbstractBasis, i)
+    return b.egvector[i]
+end
