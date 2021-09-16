@@ -1,6 +1,7 @@
 module OneDimensionalCorrelation
 
 using ArgCheck
+using BlockBandedMatrices
 using QuadGK
 using LinearAlgebra
 using PolynomialBases
