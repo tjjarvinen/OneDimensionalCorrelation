@@ -1,8 +1,6 @@
 module OneDimensionalCorrelation
 
 using ArgCheck
-using BlockArrays
-using BlockBandedMatrices
 using QuadGK
 using LinearAlgebra
 using PolynomialBases
@@ -36,6 +34,7 @@ export  bracket,
         get_identity,
         get_length,
         get_weight,
+        gram_schmit,
         g_tensor,
         initial_orbitals,
         kinetic_energy,
