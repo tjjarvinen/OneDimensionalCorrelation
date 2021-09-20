@@ -232,3 +232,7 @@ end
 function get_element(b::AbstractBasis, i)
     return b.egvector[i]
 end
+
+function number_of_elements(b::AbstractBasis)
+    return length(b.egvector)
+end

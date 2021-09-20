@@ -103,3 +103,72 @@ function reduced_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix; pointlik
     return gram_schmit(new_orbitals, w)
 end
 
+
+function boundary_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
+    out = zeros(length(b), number_of_elements(b)+2)
+    out[:,1] = orbitals[:,1] # HF ground state
+    out[1,2] = 1
+    nb = 1
+    for j in 1:number_of_elements(b)
+        le = length( get_element(b,j) )
+        nb += le - 1
+        out[nb,j+2] = 1
+    end
+    return gram_schmit(out, get_weight(b))
+end
+
+
+function ci_vector_product(b, V, ci1, ci2; Ve=x->exp(-x^2), i1=1, i2=1)
+    cip = CIElement(b, V, Ve)
+
+    states1 = ci1["states"][:,i1]
+    states2 = ci2["states"][:,i2]
+
+    orbitals1 = ci1["orbitals"]
+    orbitals2 = ci2["orbitals"]
+
+    vector1 = ci1["indexes"]
+    vector2 = ci2["indexes"]
+
+    out = Threads.Atomic{Float64}(0)
+    Threads.@threads for i in length(vector1):-1:1
+        ψ1 = @view orbitals1[:, vector1[i][1] ]
+        ψ2 = @view orbitals1[:, vector1[i][2] ]
+        tmp = 0.0
+        for j in reverse( axes(vector2,1) )
+            ϕ1 = @view orbitals2[:, vector2[j][1] ]
+            ϕ2 = @view orbitals2[:, vector2[j][2] ]
+            tmp += cip( ψ1, ψ2, ϕ1, ϕ2 ) * ( states1[i] * states2[j] )
+        end
+        Threads.atomic_add!(out, tmp)
+    end
+    return out.value
+end
+
+
+struct CIElement
+    w::Vector{Float64}
+    h1::Matrix{Float64}
+    ve::Matrix{Float64}
+    function CIElement(b::AbstractBasis, Vn, Ve=x->exp(-x^2))
+        h1 = one_electron_operator(b, Vn)
+        w = get_weight(b)
+
+        # Electron repulsion tensor
+        ve = zeros( (length(b), length(b)) )
+        for j in axes(ve,2)
+            ve[:,j] = Ve.(b[j].-b) 
+        end
+        new(w, h1, ve)
+    end
+end
+
+function (cie::CIElement)(psi1, psi2, phi1, phi2)
+    @tullio tmp = cie.w[n] * psi1[n] * phi1[n] * cie.ve[n,m] * psi2[m] * phi2[m] * cie.w[m]
+    @tullio s1 = phi1[n] * psi1[n] * cie.w[n]
+    @tullio s2 = phi2[n] * psi2[n] * cie.w[n]
+    tmp += ( psi1' * cie.h1 * phi1 ) * s2
+    tmp += ( psi2' * cie.h1 * phi2 ) * s1
+    return tmp
+end
+
