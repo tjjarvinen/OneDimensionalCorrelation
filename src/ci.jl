@@ -118,9 +118,7 @@ function boundary_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
 end
 
 
-function ci_vector_product(b, V, ci1, ci2; Ve=x->exp(-x^2), i1=1, i2=1)
-    cip = CIElement(b, V, Ve)
-
+function ci_vector_product(op, ci1, ci2; i1=1, i2=1)
     states1 = ci1["states"][:,i1]
     states2 = ci2["states"][:,i2]
 
@@ -138,7 +136,7 @@ function ci_vector_product(b, V, ci1, ci2; Ve=x->exp(-x^2), i1=1, i2=1)
         for j in reverse( axes(vector2,1) )
             ϕ1 = @view orbitals2[:, vector2[j][1] ]
             ϕ2 = @view orbitals2[:, vector2[j][2] ]
-            tmp += cip( ψ1, ψ2, ϕ1, ϕ2 ) * ( states1[i] * states2[j] )
+            tmp += op( ψ1, ψ2, ϕ1, ϕ2 ) * ( states1[i] * states2[j] )
         end
         Threads.atomic_add!(out, tmp)
     end
@@ -146,11 +144,11 @@ function ci_vector_product(b, V, ci1, ci2; Ve=x->exp(-x^2), i1=1, i2=1)
 end
 
 
-struct CIElement
+struct CIHamilton
     w::Vector{Float64}
     h1::Matrix{Float64}
     ve::Matrix{Float64}
-    function CIElement(b::AbstractBasis, Vn, Ve=x->exp(-x^2))
+    function CIHamilton(b::AbstractBasis, Vn, Ve=x->exp(-x^2))
         h1 = one_electron_operator(b, Vn)
         w = get_weight(b)
 
@@ -163,7 +161,7 @@ struct CIElement
     end
 end
 
-function (cie::CIElement)(psi1, psi2, phi1, phi2)
+function (cie::CIHamilton)(psi1, psi2, phi1, phi2)
     @tullio tmp = cie.w[n] * psi1[n] * phi1[n] * cie.ve[n,m] * psi2[m] * phi2[m] * cie.w[m]
     @tullio s1 = phi1[n] * psi1[n] * cie.w[n]
     @tullio s2 = phi2[n] * psi2[n] * cie.w[n]
@@ -172,3 +170,13 @@ function (cie::CIElement)(psi1, psi2, phi1, phi2)
     return tmp
 end
 
+struct CIOverlap
+    g::Diagonal{Float64, Vector{Float64}}
+    function CIOverlap(b::AbstractBasis)
+        new(metric_tensor(b))
+    end
+end
+
+function (cio::CIOverlap)(psi1, psi2, phi1, phi2)
+    return ( psi1' * cio.g * phi1 ) * ( psi2' * cio.g * phi2 )
+end

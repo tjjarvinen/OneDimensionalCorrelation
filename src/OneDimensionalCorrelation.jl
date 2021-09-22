@@ -17,12 +17,15 @@ include("ci.jl")
 
 export  Basis,
         BasisLobatto,
+        CIHamilton,
+        CIOverlap,
         Element1D,
         ElementGrid,
         ElementGridLobatto
 
 export  bracket,
         ci_matrix,
+        ci_vector_product,
         coulomb_matrix,
         derivative_matrix,
         eri,
