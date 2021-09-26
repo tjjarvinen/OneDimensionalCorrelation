@@ -236,3 +236,14 @@ end
 function number_of_elements(b::AbstractBasis)
     return length(b.egvector)
 end
+
+function get_element_indexes(b::BasisLobatto, i::Int)
+    @argcheck 0 < i <= number_of_elements(b)
+    l1 = sum( [ length( get_element(b, x) ) for x in 1:i ] ) - max(0, i-1)
+    l0 = sum( [ length( get_element(b, x) ) for x in 1:i-1 ] ) - max(0, i-1) + 1
+    return l0:l1
+end
+
+function get_element_indexes(b::BasisLobatto, i)
+    return (sort!∘union)( [ get_element_indexes(b, x) for x in i ]...  )
+end

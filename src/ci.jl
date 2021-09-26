@@ -118,6 +118,52 @@ function boundary_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix)
 end
 
 
+function element_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix, i)
+    @argcheck length(b) == size(orbitals, 1)
+    collumns = get_element_indexes(b, i)
+    norbs = zeros(length(b), length(collumns)+1)
+    norbs[:,1] = orbitals[:,1]
+    for i in axes(collumns,1)
+        norbs[collumns[i], i+1] = 1
+    end
+    return gram_schmit(norbs, get_weight(b))
+end
+
+
+function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
+    @argcheck 1 <= ne < number_of_elements(b)
+    ib = [i for i in 1:ne]
+    rci = []
+    @info "Calculating CI blocks"
+    for i in 0:number_of_elements(b)-ne
+        tmp = element_ci_orbitals(b, orbitals, ib .+ i )
+        push!(rci, full_ci(b, tmp, V) )
+    end
+
+    @info "Combining blocks"
+    cie = CIHamilton(b, V)
+    cio = CIOverlap(b)
+    HH =  zeros(length(rci), length(rci))
+    SS = zeros(length(rci), length(rci))
+
+    p = Progress( Int(length(rci)*(length(rci)-1)/2) )
+    for i in axes(rci, 1)
+        for j in i:length(rci)
+            HH[i,j] = ci_vector_product(cie, rci[i], rci[j])
+            SS[i,j] = ci_vector_product(cio, rci[i], rci[j])
+            next!(p)
+        end
+    end
+    @info "Calculating final state"
+    H = Symmetric(HH)
+    S = Symmetric(SS)
+    S_inv = inv(S)
+
+    e, v = eigen(S_inv*H)
+    return Dict("energy"=>e[1], "state"=>v[:,1])
+end
+
+
 function ci_vector_product(op, ci1, ci2; i1=1, i2=1)
     states1 = ci1["states"][:,i1]
     states2 = ci2["states"][:,i2]
