@@ -143,8 +143,9 @@ Calculate CI on element blocks
 # Keywords
 - `ne=2`  :  number of elements in a block
 """
-function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
+function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2, nstates=1)
     @argcheck 1 <= ne < number_of_elements(b)
+    @argcheck nstates >= 1
     ib = [i for i in 1:ne]
     rci = []
     @info "Calculating CI blocks"
@@ -156,15 +157,21 @@ function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
     @info "Combining blocks"
     cie = CIHamilton(b, V)
     cio = CIOverlap(b)
-    HH =  zeros(length(rci), length(rci))
-    SS = zeros(length(rci), length(rci))
 
-    p = Progress( Int(length(rci)*(length(rci)-1)/2) )
+    l = length(rci)*nstates
+    HH = zeros(l,l)
+    SS = zeros(l,l)
+
+    p = Progress( Int( l*(l-1)/2) )
     for i in axes(rci, 1)
         for j in i:length(rci)
-            HH[i,j] = ci_vector_product(cie, rci[i], rci[j])
-            SS[i,j] = ci_vector_product(cio, rci[i], rci[j])
-            next!(p)
+            for ii in 1:nstates
+                for jj in 1:nstates
+                    HH[ (i-1)*nstates+ii, (j-1)*nstates+jj ] = ci_vector_product(cie, rci[i], rci[j]; i1=ii, i2=jj)
+                    SS[ (i-1)*nstates+ii, (j-1)*nstates+jj ] = ci_vector_product(cio, rci[i], rci[j]; i1=ii, i2=jj)
+                    next!(p)
+                end
+            end
         end
     end
     @info "Calculating final state"
@@ -173,7 +180,7 @@ function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
     S_inv = inv(S)
 
     e, v = eigen(S_inv*H)
-    return Dict("energy"=>e[1], "state"=>v[:,1])
+    return Dict("energy"=>e[1:nstates], "state"=>v[:,1:nstates])
 end
 
 
