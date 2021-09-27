@@ -130,6 +130,19 @@ function element_ci_orbitals(b::BasisLobatto, orbitals::AbstractMatrix, i)
 end
 
 
+"""
+    block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
+
+Calculate CI on element blocks
+
+# Arguments
+- `b::BasisLobatto`            :  Basis for the calculation
+- `orbitals::AbstractMatrix`   :  First collumn is taken as initial state
+- `V`                          :  Nuclear potential
+
+# Keywords
+- `ne=2`  :  number of elements in a block
+"""
 function block_ci(b::BasisLobatto, orbitals::AbstractMatrix, V; ne=2)
     @argcheck 1 <= ne < number_of_elements(b)
     ib = [i for i in 1:ne]
@@ -190,6 +203,18 @@ function ci_vector_product(op, ci1, ci2; i1=1, i2=1)
 end
 
 
+
+"""
+    CIHamilton
+
+Used to calculate energy on CI-vector elements
+
+# Fields
+- `w::Vector{Float64}`   : integration weights
+- `h1::Matrix{Float64}`  : one electron Hamilton
+- `ve::Matrix{Float64}`  : electron-electron repulsion
+
+"""
 struct CIHamilton
     w::Vector{Float64}
     h1::Matrix{Float64}
@@ -216,6 +241,12 @@ function (cie::CIHamilton)(psi1, psi2, phi1, phi2)
     return tmp
 end
 
+
+"""
+    CIOverlap
+
+Calculate overlap on CI-vector elements
+"""
 struct CIOverlap
     g::Diagonal{Float64, Vector{Float64}}
     function CIOverlap(b::AbstractBasis)
