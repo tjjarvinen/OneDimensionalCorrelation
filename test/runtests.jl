@@ -107,3 +107,13 @@ end
     E, eo, orbitals = solve_hartree_fock(b, V)
     @test E < -2.2123101
 end
+
+
+@testset "CI" begin
+    b = BasisLobatto(-10, 10, 6, 12)
+    V(x) = -2exp(-0.5x^2) 
+    E, eo, orbitals = solve_hartree_fock(b, V)
+
+    eb = block_ci(b, orbitals, V)
+    @test E > eb["energy"]
+end
