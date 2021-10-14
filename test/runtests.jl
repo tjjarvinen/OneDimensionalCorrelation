@@ -115,5 +115,5 @@ end
     E, eo, orbitals = solve_hartree_fock(b, V)
 
     eb = block_ci(b, orbitals, V)
-    @test E > eb["energy"]
+    @test E > eb["energy"][1]
 end
