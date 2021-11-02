@@ -44,18 +44,21 @@ function fock_matrix!(f::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMat
     return f .= h₁ + J  # h₁ + 2*J - K
 end
 
+"""
+    coulomb_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
 
-function coulomb_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
+"""
+function coulomb_matrix(b::AbstractBasis, orbitals::AbstractMatrix; noccupied=1)
     C = zeros(size(orbitals))
-    return coulomb_matrix!(C, b, orbitals)
+    return coulomb_matrix!(C, b, orbitals; noccupied=noccupied)
 end
 
-function coulomb_matrix!(C::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMatrix)
+function coulomb_matrix!(C::AbstractMatrix, b::AbstractBasis, orbitals::AbstractMatrix; noccupied=1)
     @argcheck size(C) == size(orbitals) == (length(b), length(b))
     l = length(b)
     w = get_weight(b)
 
-    # Two electrons in total
+    #ρ = sum( c -> c*c', eachcol(orbitals[1:noccupied]) )
     ρ = orbitals[:,1] * orbitals[:,1]'
     for i in 1:l
         # C[i,j]=0 for i!=j
@@ -75,12 +78,11 @@ function exchange_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
 
     # Two electrons in total
     ρ = orbitals[:,1] * orbitals[:,1]'
-    Threads.@threads for i in 1:l
+    for i in 1:l
         for j in 1:l
-            for n in 1:l
-                K[i,j] += sum( k-> erig(b, i,n,j,k) * ρ[n,k], 1:l)
-            end
-            K[i,j] *= w[i] * w[j]
+            # erig(b, i,n,j,k) = 0 if i!=n
+            # erig(b, i,n,j,k) = 0 if j!=k
+            K[i,j] = erig(b, i,i,j,j) * ρ[j,i] * w[i] * w[j]
         end
     end
     return K     
@@ -94,7 +96,7 @@ function bracket(
         psi2::AbstractVector
     )
     w = get_weight(b)
-    return (conj.(psi1).*w)' * op * psi2
+    return (conj.(psi1) .* w)' * op * psi2
 end
 
 function bracket(b::AbstractBasis, psi1::AbstractVector, psi2::AbstractVector)
