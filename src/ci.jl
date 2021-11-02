@@ -233,7 +233,10 @@ struct CIHamilton
         # Electron repulsion tensor
         ve = zeros( (length(b), length(b)) )
         for j in axes(ve,2)
-            ve[:,j] = Ve.(b[j].-b) 
+            for i in axes(ve,1)
+                # Only J not K
+                ve[i,j] = erig(b, i, j, Ve=Ve)
+            end
         end
         new(w, h1, ve)
     end

@@ -4,6 +4,7 @@ using ArgCheck
 using BlockBandedMatrices
 using QuadGK
 using LinearAlgebra
+using Octavian
 using PolynomialBases
 using ProgressMeter
 using Tullio
