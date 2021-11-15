@@ -267,3 +267,62 @@ end
 function (cio::CIOverlap)(psi1, psi2, phi1, phi2)
     return ( psi1' * cio.g * phi1 ) * ( psi2' * cio.g * phi2 )
 end
+
+
+
+
+## 
+
+"""
+    CIVector{N}
+
+CI vector structure for CI calculations. `N` is number of electrons.
+"""
+struct CIVector{N} <: AbstractVector{Matrix{Float64}}
+    a::Vector{Float64}
+    orb_index::Vector{SVector{N,Int}}
+    function CIVector(n::Int)
+        @argcheck n%2 == 0
+        o_inx=[ (Int∘ceil)(i//2) for i in 1:n]
+        new{n}( [1.], [SVector{n}(o_inx)] )
+    end
+end
+
+Base.size(cv::CIVector) = size(cv.a)
+Base.getindex(cv::CIVector, i::Int) = cv.orb_index[i]
+
+function Base.push!(cv::CIVector, a, oindx)
+    push!(cv.a, a)
+    anorm = norm(cv.a)
+    cv.a .*= 1/anorm
+    push!(cv.orb_index, oindx)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", cv::CIVector)
+    print(io, "CI vector ", length( cv.orb_index[1] ), " electrons")
+end
+
+
+function (cio::CIOverlap)(cv1::CIVector{N}, cv2::CIVector{N}) where N
+    s = sum( Iterators.product(1:length(cv1), 1:length(cv2)) ) do (n,m)
+        tmp = (prod∘diag)( cv1[n]' * cio.g * cv2[m] )
+        tmp * cv1.a[n] * cv2.a[m]       
+    end
+    return s
+end
+
+function (cio::CIOverlap)(basis::AbstractMatrix, a, aind, b, bind)
+    @argcheck length(a) == length(aind)
+    @argcheck length(b) == length(bind)
+    s = sum( Iterators.product(1:length(a), 1:length(b)) ) do (n,m)
+        tmp = (prod∘diag)( basis[:, aind[n]]' * cio.g * basis[:, bind[m]] )
+    end
+    return s
+end
+
+
+function (cih::CIHamilton)(cv1::CIVector{N}, cv2::CIVector{N}) where N
+    h = sum( Iterators.product(1:length(cv1), 1:length(cv2)) ) do (n,m)
+        tmp = (prod∘diag)( cv1[n]' * cio.g * cv2[m] )
+    end
+end

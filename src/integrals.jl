@@ -80,8 +80,8 @@ function exchange_matrix(b::AbstractBasis, orbitals::AbstractMatrix)
     ρ = orbitals[:,1] * orbitals[:,1]'
     for i in 1:l
         for j in 1:l
-            # erig(b, i,n,j,k) = 0 if i!=n
-            # erig(b, i,n,j,k) = 0 if j!=k
+            # erig(b, i,j,k,l) = 0 if i!=j
+            # erig(b, i,j,k,l) = 0 if k!=l
             K[i,j] = erig(b, i,i,j,j) * ρ[j,i] * w[i] * w[j]
         end
     end

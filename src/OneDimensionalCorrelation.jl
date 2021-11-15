@@ -7,6 +7,7 @@ using LinearAlgebra
 using Octavian
 using PolynomialBases
 using ProgressMeter
+using StaticArrays
 using Tullio
 
 include("basis.jl")
@@ -20,6 +21,7 @@ export  Basis,
         BasisLobatto,
         CIHamilton,
         CIOverlap,
+        CIVector,
         Element1D,
         ElementGrid,
         ElementGridLobatto
